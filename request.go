@@ -49,6 +49,7 @@ type RequestHeader struct {
 	keepAlive         bool
 	contentLength     int64
 	isProxyConnection bool
+	userAgent         string
 }
 
 type HttpVersion string
@@ -374,6 +375,8 @@ func (rh *RequestHeader) analyseHeaders(req bool, allowEOFDelimitedBody bool) er
 			} else if strings.Contains(lower, "keep-alive") {
 				rh.keepAlive = true
 			}
+        case strings.HasPrefix(lower, "user-agent:"):
+		    rh.headers[i] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
 		}
 	}
 	return nil
