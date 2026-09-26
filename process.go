@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/momiji/kpx/ui"
+	"kpx/ui"
 	"github.com/txthinking/socks5"
 
 	"github.com/palantir/stacktrace"
@@ -60,7 +60,7 @@ func (p *Process) processHttp() {
 	defer func() { _ = p.conn.Close() }()
 	// loop until proxyChannel is empty, meaning connection should close
 	var clientChannel = &ProxyRequest{
-		conn: p.conn,
+		conn: p.conn, config: p.config,
 	}
 	// loop
 	var proxyChannel *ProxyRequest

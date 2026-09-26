@@ -16,6 +16,7 @@ const CT_PLAIN_UTF8 = "text/plain; charset=UTF-8"
 //const CT_PROXY_AUTOCONFIG = "application/x-ns-proxy-autoconfig"
 
 type ProxyRequest struct {
+	config *Config
 	// input / output streams
 	conn *TimedConn
 	// headers stream, with already read data
@@ -25,6 +26,7 @@ type ProxyRequest struct {
 }
 
 type RequestHeader struct {
+	config    *Config
 	headers   []string
 	data      []byte
 	startData int
@@ -49,7 +51,6 @@ type RequestHeader struct {
 	keepAlive         bool
 	contentLength     int64
 	isProxyConnection bool
-	userAgent         string
 }
 
 type HttpVersion string
@@ -98,7 +99,7 @@ func (r *ProxyRequest) injectHeaders(headers []string) (*RequestHeader, error) {
 	h := make([]string, len(headers))
 	copy(h, headers)
 	d := make([]byte, 0)
-	rh := RequestHeader{headers: h, data: d}
+	rh := RequestHeader{headers: h, data: d, config: r.config}
 	r.header = &rh
 	return r.header, nil
 }
@@ -134,7 +135,7 @@ func (r *ProxyRequest) ReadFull(buffer []byte) (int, error) {
 
 func (r *ProxyRequest) readHeaders() (*RequestHeader, error) {
 	// init header
-	h := RequestHeader{}
+	h := RequestHeader{config: r.config}
 	// read header bytes
 	startData := 0
 	startLine := 0
@@ -376,7 +377,10 @@ func (rh *RequestHeader) analyseHeaders(req bool, allowEOFDelimitedBody bool) er
 				rh.keepAlive = true
 			}
         case strings.HasPrefix(lower, "user-agent:"):
-		    rh.headers[i] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
+			if rh.config.conf.UserAgent != "" {
+			    rh.headers[i] = rh.config.conf.UserAgent
+		    //rh.headers[i] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
+			}
 		}
 	}
 	return nil
